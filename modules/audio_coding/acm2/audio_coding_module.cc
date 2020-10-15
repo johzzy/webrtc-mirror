@@ -93,6 +93,10 @@ class AudioCodingModuleImpl final : public AudioCodingModule {
 
   ANAStats GetANAStats() const override;
 
+#ifndef DISABLE_RECORDER
+  void InjectRecorder(Recorder* recorder) override;
+#endif
+
  private:
   struct InputData {
     InputData() : buffer(kInitialInputDataBufferSize) {}
@@ -183,6 +187,11 @@ class AudioCodingModuleImpl final : public AudioCodingModule {
   AudioPacketizationCallback* packetization_callback_
       RTC_GUARDED_BY(callback_mutex_);
 
+#ifndef DISABLE_RECORDER
+  mutable Mutex recorder_lock_;
+  Recorder* recorder_ RTC_GUARDED_BY(recorder_lock_);
+#endif
+
   int codec_histogram_bins_log_[static_cast<size_t>(
       AudioEncoder::CodecType::kMaxLoggedAudioCodecTypes)];
   int number_of_consecutive_empty_packets_;
@@ -216,6 +225,10 @@ AudioCodingModuleImpl::AudioCodingModuleImpl(
       first_10ms_data_(false),
       first_frame_(true),
       packetization_callback_(NULL),
+      // vad_callback_(NULL),
+#ifndef DISABLE_RECORDER
+      recorder_(nullptr),
+#endif
       codec_histogram_bins_log_(),
       number_of_consecutive_empty_packets_(0) {
   if (InitializeReceiverSafe() < 0) {
@@ -296,6 +309,19 @@ int32_t AudioCodingModuleImpl::Encode(
     frame_type = encoded_info.speech ? AudioFrameType::kAudioFrameSpeech
                                      : AudioFrameType::kAudioFrameCN;
   }
+
+#ifndef DISABLE_RECORDER
+  {
+    MutexLock lock(&recorder_lock_);
+    if (encode_buffer_.size() > 0 && recorder_) {
+      recorder_->AddAudioFrame(encoder_stack_->SampleRateHz(),
+                               encoder_stack_->NumChannels(),
+                               encode_buffer_.data(),
+                               encode_buffer_.size(),
+                               encoded_info.encoder_type);
+    }
+  }
+#endif
 
   {
     MutexLock lock(&callback_mutex_);
@@ -603,6 +629,16 @@ ANAStats AudioCodingModuleImpl::GetANAStats() const {
   // If no encoder is set, return default stats.
   return ANAStats();
 }
+
+#ifndef DISABLE_RECORDER
+void AudioCodingModuleImpl::InjectRecorder(Recorder* recorder) {
+  char log_buf[16];
+  snprintf(log_buf, sizeof(log_buf) - 1, "%p", recorder);
+  RTC_LOG(LS_INFO) << "AudioCodingModuleImpl::InjectRecorder " << log_buf;
+  MutexLock lock(&recorder_lock_);
+  recorder_ = recorder;
+}
+#endif
 
 }  // namespace
 

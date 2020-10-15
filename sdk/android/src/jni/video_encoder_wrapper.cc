@@ -299,6 +299,45 @@ int32_t VideoEncoderWrapper::HandleReturnCode(JNIEnv* jni,
   return WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE;
 }
 
+RTPFragmentationHeader VideoEncoderWrapper::ParseFragmentationHeader(
+    rtc::ArrayView<const uint8_t> buffer) {
+  RTPFragmentationHeader header;
+#ifndef DISABLE_H265
+  if (codec_settings_.codecType == kVideoCodecH264
+    || codec_settings_.codecType == kVideoCodecH265) {
+    if (codec_settings_.codecType == kVideoCodecH264) {
+      h264_bitstream_parser_.ParseBitstream(buffer.data(), buffer.size());
+    } else if (codec_settings_.codecType == kVideoCodecH265) {
+      h265_bitstream_parser_.ParseBitstream(buffer.data(), buffer.size());
+    }
+#else
+  if (codec_settings_.codecType == kVideoCodecH264) {
+    h264_bitstream_parser_.ParseBitstream(buffer.data(), buffer.size());
+#endif
+
+    // For H.264 search for start codes.
+    const std::vector<H264::NaluIndex> nalu_idxs =
+        H264::FindNaluIndices(buffer.data(), buffer.size());
+    if (nalu_idxs.empty()) {
+      RTC_LOG(LS_ERROR) << "Start code is not found!";
+      RTC_LOG(LS_ERROR) << "Data:" << buffer[0] << " " << buffer[1] << " "
+                        << buffer[2] << " " << buffer[3] << " " << buffer[4]
+                        << " " << buffer[5];
+    }
+    header.VerifyAndAllocateFragmentationHeader(nalu_idxs.size());
+    for (size_t i = 0; i < nalu_idxs.size(); i++) {
+      header.fragmentationOffset[i] = nalu_idxs[i].payload_start_offset;
+      header.fragmentationLength[i] = nalu_idxs[i].payload_size;
+    }
+  } else {
+    // Generate a header describing a single fragment.
+    header.VerifyAndAllocateFragmentationHeader(1);
+    header.fragmentationOffset[0] = 0;
+    header.fragmentationLength[0] = buffer.size();
+  }
+  return header;
+}
+
 int VideoEncoderWrapper::ParseQp(rtc::ArrayView<const uint8_t> buffer) {
   int qp;
   bool success;
@@ -314,6 +353,11 @@ int VideoEncoderWrapper::ParseQp(rtc::ArrayView<const uint8_t> buffer) {
       qp = h264_bitstream_parser_.GetLastSliceQp().value_or(-1);
       success = (qp >= 0);
       break;
+#ifndef DISABLE_H265
+    case kVideoCodecH265:
+      success = h265_bitstream_parser_.GetLastSliceQp(&qp);
+      break;
+#endif
     default:  // Default is to not provide QP.
       success = false;
       break;

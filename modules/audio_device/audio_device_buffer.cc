@@ -24,6 +24,8 @@
 
 namespace webrtc {
 
+static AudioDeviceBuffer* gInstance = nullptr;
+
 static const char kTimerQueueName[] = "AudioDeviceBufferTimer";
 
 // Time between two sucessive calls to LogStats().
@@ -40,10 +42,15 @@ static const size_t kMinValidCallTimeTimeInMilliseconds =
 static const double k2Pi = 6.28318530717959;
 #endif
 
+AudioDeviceBuffer* AudioDeviceBuffer::Instance() {
+  return gInstance;
+}
+
 AudioDeviceBuffer::AudioDeviceBuffer(TaskQueueFactory* task_queue_factory)
     : task_queue_(task_queue_factory->CreateTaskQueue(
           kTimerQueueName,
           TaskQueueFactory::Priority::NORMAL)),
+      task_queue_factory_(task_queue_factory),
       audio_transport_cb_(nullptr),
       rec_sample_rate_(0),
       play_sample_rate_(0),
@@ -66,6 +73,8 @@ AudioDeviceBuffer::AudioDeviceBuffer(TaskQueueFactory* task_queue_factory)
   phase_ = 0.0;
   RTC_LOG(WARNING) << "AUDIO_DEVICE_PLAYS_SINUS_TONE is defined!";
 #endif
+
+  gInstance = this;
 }
 
 AudioDeviceBuffer::~AudioDeviceBuffer() {
@@ -73,6 +82,7 @@ AudioDeviceBuffer::~AudioDeviceBuffer() {
   RTC_DCHECK(!playing_);
   RTC_DCHECK(!recording_);
   RTC_LOG(INFO) << "AudioDeviceBuffer::~dtor";
+  gInstance = nullptr;
 }
 
 int32_t AudioDeviceBuffer::RegisterAudioCallback(

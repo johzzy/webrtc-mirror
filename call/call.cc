@@ -22,6 +22,7 @@
 #include "absl/types/optional.h"
 #include "api/rtc_event_log/rtc_event_log.h"
 #include "api/sequence_checker.h"
+#include "api/rtp_transceiver_interface.h"
 #include "api/transport/network_control.h"
 #include "audio/audio_receive_stream.h"
 #include "audio/audio_send_stream.h"
@@ -40,6 +41,9 @@
 #include "logging/rtc_event_log/events/rtc_event_video_send_stream_config.h"
 #include "logging/rtc_event_log/rtc_stream_config.h"
 #include "modules/congestion_controller/include/receive_side_congestion_controller.h"
+#ifndef DISABLE_RECORDER
+#include "modules/recording/recorder.h"
+#endif
 #include "modules/rtp_rtcp/include/flexfec_receiver.h"
 #include "modules/rtp_rtcp/include/rtp_header_extension_map.h"
 #include "modules/rtp_rtcp/source/byte_io.h"
@@ -279,6 +283,9 @@ class Call final : public webrtc::Call,
   void DestroyVideoReceiveStream(
       webrtc::VideoReceiveStream* receive_stream) override;
 
+  int32_t StartRecorder(int32_t dir, std::string path) override;
+  int32_t StopRecorder(int32_t dir) override;
+
   FlexfecReceiveStream* CreateFlexfecReceiveStream(
       const FlexfecReceiveStream::Config& config) override;
   void DestroyFlexfecReceiveStream(
@@ -465,6 +472,10 @@ class Call final : public webrtc::Call,
   // owned by |transport_send_| since calls might arrive on the network thread
   // while Call is being deleted and the task queue is being torn down.
   ScopedTaskSafety task_safety_;
+#ifndef DISABLE_RECORDER
+  Recorder* send_recorder_;
+  Recorder* recv_recorder_;
+#endif
 
   // Caches transport_send_.get(), to avoid racing with destructor.
   // Note that this is declared before transport_send_ to ensure that it is not
@@ -659,6 +670,10 @@ Call::Call(Clock* clock,
       receive_time_calculator_(ReceiveTimeCalculator::CreateFromFieldTrial()),
       video_send_delay_stats_(new SendDelayStats(clock_)),
       start_ms_(clock_->TimeInMilliseconds()),
+#ifndef DISABLE_RECORDER
+      send_recorder_(nullptr),
+      recv_recorder_(nullptr),
+#endif
       transport_send_ptr_(transport_send.get()),
       transport_send_(std::move(transport_send)) {
   RTC_DCHECK(config.event_log != nullptr);
@@ -686,6 +701,12 @@ Call::~Call() {
   RTC_CHECK(video_send_streams_.empty());
   RTC_CHECK(audio_receive_streams_.empty());
   RTC_CHECK(video_receive_streams_.empty());
+
+  StopRecorder((int32_t) RtpTransceiverDirection::kSendOnly);
+  StopRecorder((int32_t) RtpTransceiverDirection::kRecvOnly);
+
+  // todo: ???
+  // module_process_thread_->Stop();
 
   module_process_thread_->process_thread()->DeRegisterModule(
       receive_side_cc_.GetRemoteBitrateEstimator(true));
@@ -804,6 +825,11 @@ webrtc::AudioSendStream* Call::CreateAudioSendStream(
       module_process_thread_->process_thread(), transport_send_ptr_,
       bitrate_allocator_.get(), event_log_, call_stats_->AsRtcpRttStats(),
       suspended_rtp_state);
+
+#ifndef DISABLE_RECORDER
+  send_stream->InjectRecorder(send_recorder_);
+#endif
+
   RTC_DCHECK(audio_send_ssrcs_.find(config.rtp.ssrc) ==
              audio_send_ssrcs_.end());
   audio_send_ssrcs_[config.rtp.ssrc] = send_stream;
@@ -869,6 +895,15 @@ webrtc::AudioReceiveStream* Call::CreateAudioReceiveStream(
   // TODO(bugs.webrtc.org/11993): Update the below on the network thread.
   // We could possibly set up the audio_receiver_controller_ association up
   // as part of the async setup.
+#ifndef DISABLE_RECORDER
+  receive_stream->InjectRecorder(recv_recorder_);
+#endif
+  {
+    // WriteLockScoped write_lock(*receive_crit_);
+    receive_rtp_config_.emplace(config.rtp.remote_ssrc,
+                                ReceiveRtpConfig(config));
+    audio_receive_streams_.insert(receive_stream);
+  }
   receive_rtp_config_.emplace(config.rtp.remote_ssrc, ReceiveRtpConfig(config));
   audio_receive_streams_.insert(receive_stream);
 
@@ -943,6 +978,9 @@ webrtc::VideoSendStream* Call::CreateVideoSendStream(
       bitrate_allocator_.get(), video_send_delay_stats_.get(), event_log_,
       std::move(config), std::move(encoder_config), suspended_video_send_ssrcs_,
       suspended_video_payload_states_, std::move(fec_controller));
+#ifndef DISABLE_RECORDER
+  send_stream->InjectRecorder(send_recorder_);
+#endif
 
   for (uint32_t ssrc : ssrcs) {
     RTC_DCHECK(video_send_ssrcs_.find(ssrc) == video_send_ssrcs_.end());
@@ -1033,6 +1071,9 @@ webrtc::VideoReceiveStream* Call::CreateVideoReceiveStream(
       num_cpu_cores_, transport_send_ptr_->packet_router(),
       std::move(configuration), module_process_thread_->process_thread(),
       call_stats_.get(), clock_, new VCMTiming(clock_));
+#ifndef DISABLE_RECORDER
+  receive_stream->InjectRecorder(recv_recorder_);
+#endif
 
   const webrtc::VideoReceiveStream::Config& config = receive_stream->config();
   if (config.rtp.rtx_ssrc) {
@@ -1076,6 +1117,93 @@ void Call::DestroyVideoReceiveStream(
 
   UpdateAggregateNetworkState();
   delete receive_stream_impl;
+}
+
+int32_t Call::StartRecorder(int32_t dir, std::string path) {
+#ifndef DISABLE_RECORDER
+  RTC_DCHECK_RUN_ON(worker_thread_);
+  RTC_LOG(LS_INFO) << "Call::StartRecorder " << dir << " " << path;
+
+  if (path.rfind(".mkv") == std::string::npos) {
+    return -1;
+  }
+
+  if (dir == (int32_t) RtpTransceiverDirection::kSendOnly) {
+    if (send_recorder_) {
+      return -2;
+    }
+    send_recorder_ = new Recorder(task_queue_factory_);
+    int res = send_recorder_->Start(path);
+    if (res != 0) {
+        return res;
+    }
+    {
+      // WriteLockScoped write_lock(*send_crit_);
+      for (auto send_stream : video_send_streams_) {
+        send_stream->InjectRecorder(send_recorder_);
+      }
+      for (const auto& kv : audio_send_ssrcs_) {
+        kv.second->InjectRecorder(send_recorder_);
+      }
+    }
+  } else if (dir == (int32_t) RtpTransceiverDirection::kRecvOnly) {
+    if (recv_recorder_) {
+      return -3;
+    }
+    recv_recorder_ = new Recorder(task_queue_factory_);
+    int res = recv_recorder_->Start(path);
+    if (res != 0) {
+        return res;
+    }
+    {
+      // WriteLockScoped write_lock(*receive_crit_);
+      for (auto recv_stream : video_receive_streams_) {
+        recv_stream->InjectRecorder(recv_recorder_);
+      }
+      for (auto recv_stream : audio_receive_streams_) {
+        recv_stream->InjectRecorder(recv_recorder_);
+      }
+    }
+  } else {
+    return -4;
+  }
+#endif
+  return 0;
+}
+
+int32_t Call::StopRecorder(int32_t dir) {
+#ifndef DISABLE_RECORDER
+  RTC_DCHECK_RUN_ON(worker_thread_);
+  RTC_LOG(LS_INFO) << "Call::StopRecorder " << dir;
+  if (dir == (int32_t) RtpTransceiverDirection::kSendOnly && send_recorder_) {
+    {
+      // WriteLockScoped write_lock(*send_crit_);
+      for (VideoSendStream* send_stream : video_send_streams_) {
+        send_stream->InjectRecorder(nullptr);
+      }
+      for (const auto& kv : audio_send_ssrcs_) {
+        kv.second->InjectRecorder(nullptr);
+      }
+    }
+    send_recorder_->Stop();
+    delete send_recorder_;
+    send_recorder_ = nullptr;
+  } else if (dir == (int32_t) RtpTransceiverDirection::kRecvOnly && recv_recorder_) {
+    {
+      // WriteLockScoped write_lock(*receive_crit_);
+      for (auto recv_stream : video_receive_streams_) {
+        recv_stream->InjectRecorder(nullptr);
+      }
+      for (auto recv_stream : audio_receive_streams_) {
+        recv_stream->InjectRecorder(nullptr);
+      }
+    }
+    recv_recorder_->Stop();
+    delete recv_recorder_;
+    recv_recorder_ = nullptr;
+  }
+#endif
+  return 0;
 }
 
 FlexfecReceiveStream* Call::CreateFlexfecReceiveStream(

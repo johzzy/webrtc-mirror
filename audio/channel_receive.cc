@@ -173,6 +173,9 @@ class ChannelReceive : public ChannelReceiveInterface {
   void SetDepacketizerToDecoderFrameTransformer(
       rtc::scoped_refptr<webrtc::FrameTransformerInterface> frame_transformer)
       override;
+#ifndef DISABLE_RECORDER
+  void InjectRecorder(Recorder* recorder) override;
+#endif
 
  private:
   void ReceivePacket(const uint8_t* packet,
@@ -832,6 +835,12 @@ void ChannelReceive::SetDepacketizerToDecoderFrameTransformer(
     return;
   InitFrameTransformerDelegate(std::move(frame_transformer));
 }
+
+#ifndef DISABLE_RECORDER
+void ChannelReceive::InjectRecorder(Recorder* recorder) {
+  acm_receiver_.InjectRecorder(recorder);
+}
+#endif
 
 NetworkStatistics ChannelReceive::GetNetworkStatistics(
     bool get_and_clear_legacy_stats) const {
