@@ -2153,6 +2153,166 @@ bool PeerConnection::GetSslRole(const std::string& content_name,
   return false;
 }
 
+int32_t PeerConnection::StartRecorder(int32_t dir, std::string path) {
+  if (!worker_thread()->IsCurrent()) {
+    return worker_thread()->Invoke<int32_t>(
+        RTC_FROM_HERE, rtc::Bind(&PeerConnection::StartRecorder, this, dir,
+                                 path));
+  }
+  RTC_DCHECK_RUN_ON(worker_thread());
+  RTC_DCHECK(call_);
+  return call_->StartRecorder(dir, path);
+}
+
+int32_t PeerConnection::StopRecorder(int32_t dir) {
+  if (!worker_thread()->IsCurrent()) {
+    return worker_thread()->Invoke<int32_t>(
+        RTC_FROM_HERE, rtc::Bind(&PeerConnection::StopRecorder, this, dir));
+  }
+  RTC_DCHECK_RUN_ON(worker_thread());
+  RTC_DCHECK(call_);
+  return call_->StopRecorder(dir);
+}
+
+// RTCError PeerConnection::UpdateSessionState(
+//     SdpType type,
+//     cricket::ContentSource source,
+//     const cricket::SessionDescription* description) {
+//   RTC_DCHECK_RUN_ON(signaling_thread());
+
+//   // If there's already a pending error then no state transition should happen.
+//   // But all call-sites should be verifying this before calling us!
+//   RTC_DCHECK(session_error() == SessionError::kNone);
+
+//   // If this is answer-ish we're ready to let media flow.
+//   if (type == SdpType::kPrAnswer || type == SdpType::kAnswer) {
+//     EnableSending();
+//   }
+
+//   // Update the signaling state according to the specified state machine (see
+//   // https://w3c.github.io/webrtc-pc/#rtcsignalingstate-enum).
+//   if (type == SdpType::kOffer) {
+//     ChangeSignalingState(source == cricket::CS_LOCAL
+//                              ? PeerConnectionInterface::kHaveLocalOffer
+//                              : PeerConnectionInterface::kHaveRemoteOffer);
+//   } else if (type == SdpType::kPrAnswer) {
+//     ChangeSignalingState(source == cricket::CS_LOCAL
+//                              ? PeerConnectionInterface::kHaveLocalPrAnswer
+//                              : PeerConnectionInterface::kHaveRemotePrAnswer);
+//   } else {
+//     RTC_DCHECK(type == SdpType::kAnswer);
+//     ChangeSignalingState(PeerConnectionInterface::kStable);
+//     transceiver_stable_states_by_transceivers_.clear();
+//   }
+
+//   // Update internal objects according to the session description's media
+//   // descriptions.
+//   RTCError error = PushdownMediaDescription(type, source);
+//   if (!error.ok()) {
+//     return error;
+//   }
+
+//   return RTCError::OK();
+// }
+
+// RTCError PeerConnection::PushdownMediaDescription(
+//     SdpType type,
+//     cricket::ContentSource source) {
+//   const SessionDescriptionInterface* sdesc =
+//       (source == cricket::CS_LOCAL ? local_description()
+//                                    : remote_description());
+//   RTC_DCHECK(sdesc);
+
+//   // Push down the new SDP media section for each audio/video transceiver.
+//   for (const auto& transceiver : transceivers_) {
+//     const ContentInfo* content_info =
+//         FindMediaSectionForTransceiver(transceiver, sdesc);
+//     cricket::ChannelInterface* channel = transceiver->internal()->channel();
+//     if (!channel || !content_info || content_info->rejected) {
+//       continue;
+//     }
+//     const MediaContentDescription* content_desc =
+//         content_info->media_description();
+//     if (!content_desc) {
+//       continue;
+//     }
+//     std::string error;
+//     bool success = (source == cricket::CS_LOCAL)
+//                        ? channel->SetLocalContent(content_desc, type, &error)
+//                        : channel->SetRemoteContent(content_desc, type, &error);
+//     if (!success) {
+//       LOG_AND_RETURN_ERROR(RTCErrorType::INVALID_PARAMETER, error);
+//     }
+//   }
+
+//   // If using the RtpDataChannel, push down the new SDP section for it too.
+//   if (data_channel_controller_.rtp_data_channel()) {
+//     const ContentInfo* data_content =
+//         cricket::GetFirstDataContent(sdesc->description());
+//     if (data_content && !data_content->rejected) {
+//       const MediaContentDescription* data_desc =
+//           data_content->media_description();
+//       if (data_desc) {
+//         std::string error;
+//         bool success =
+//             (source == cricket::CS_LOCAL)
+//                 ? data_channel_controller_.rtp_data_channel()->SetLocalContent(
+//                       data_desc, type, &error)
+//                 : data_channel_controller_.rtp_data_channel()->SetRemoteContent(
+//                       data_desc, type, &error);
+//         if (!success) {
+//           LOG_AND_RETURN_ERROR(RTCErrorType::INVALID_PARAMETER, error);
+//         }
+//       }
+//     }
+//   }
+
+//   // Need complete offer/answer with an SCTP m= section before starting SCTP,
+//   // according to https://tools.ietf.org/html/draft-ietf-mmusic-sctp-sdp-19
+//   if (sctp_mid_ && local_description() && remote_description()) {
+//     rtc::scoped_refptr<SctpTransport> sctp_transport =
+//         transport_controller_->GetSctpTransport(*sctp_mid_);
+//     auto local_sctp_description = cricket::GetFirstSctpDataContentDescription(
+//         local_description()->description());
+//     auto remote_sctp_description = cricket::GetFirstSctpDataContentDescription(
+//         remote_description()->description());
+//     if (sctp_transport && local_sctp_description && remote_sctp_description) {
+//       int max_message_size;
+//       // A remote max message size of zero means "any size supported".
+//       // We configure the connection with our own max message size.
+//       if (remote_sctp_description->max_message_size() == 0) {
+//         max_message_size = local_sctp_description->max_message_size();
+//       } else {
+//         max_message_size =
+//             std::min(local_sctp_description->max_message_size(),
+//                      remote_sctp_description->max_message_size());
+//       }
+//       sctp_transport->Start(local_sctp_description->port(),
+//                             remote_sctp_description->port(), max_message_size);
+//     }
+//   }
+
+//   return RTCError::OK();
+// }
+
+// RTCError PeerConnection::PushdownTransportDescription(
+//     cricket::ContentSource source,
+//     SdpType type) {
+//   RTC_DCHECK_RUN_ON(signaling_thread());
+
+//   if (source == cricket::CS_LOCAL) {
+//     const SessionDescriptionInterface* sdesc = local_description();
+//     RTC_DCHECK(sdesc);
+//     return transport_controller_->SetLocalDescription(type,
+//                                                       sdesc->description());
+//   } else {
+//     const SessionDescriptionInterface* sdesc = remote_description();
+//     RTC_DCHECK(sdesc);
+//     return transport_controller_->SetRemoteDescription(type,
+//                                                        sdesc->description());
+//   }
+// }
+
 bool PeerConnection::GetTransportDescription(
     const SessionDescription* description,
     const std::string& content_name,

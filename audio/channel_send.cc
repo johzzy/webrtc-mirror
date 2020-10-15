@@ -150,6 +150,9 @@ class ChannelSend : public ChannelSendInterface,
   void SetEncoderToPacketizerFrameTransformer(
       rtc::scoped_refptr<webrtc::FrameTransformerInterface> frame_transformer)
       override;
+#ifndef DISABLE_RECORDER
+  void InjectRecorder(Recorder* recorder) override;
+#endif
 
  private:
   // From AudioPacketizationCallback in the ACM
@@ -895,6 +898,11 @@ void ChannelSend::SetEncoderToPacketizerFrameTransformer(
         InitFrameTransformerDelegate(std::move(frame_transformer));
       });
 }
+#ifndef DISABLE_RECORDER
+void ChannelSend::InjectRecorder(Recorder* recorder) {
+  audio_coding_->InjectRecorder(recorder);
+}
+#endif
 
 void ChannelSend::OnReceivedRtt(int64_t rtt_ms) {
   // Invoke audio encoders OnReceivedRtt().

@@ -174,6 +174,10 @@ class VideoReceiveStream2
                                          bool generate_key_frame) override;
   void GenerateKeyFrame() override;
 
+#ifndef DISABLE_RECORDER
+  void InjectRecorder(Recorder* recorder) override;
+#endif
+
  private:
   void CreateAndRegisterExternalDecoder(const Decoder& decoder);
   int64_t GetMaxWaitMs() const RTC_RUN_ON(decode_queue_);

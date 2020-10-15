@@ -16,6 +16,9 @@
 #import "base/RTCVideoEncoder.h"
 #import "base/RTCVideoEncoderFactory.h"
 #import "components/video_codec/RTCCodecSpecificInfoH264+Private.h"
+#ifndef DISABLE_H265
+#import "components/video_codec/RTCCodecSpecificInfoH265+Private.h"
+#endif
 #import "sdk/objc/api/peerconnection/RTCEncodedImage+Private.h"
 #import "sdk/objc/api/peerconnection/RTCVideoCodecInfo+Private.h"
 #import "sdk/objc/api/peerconnection/RTCVideoEncoderSettings+Private.h"
@@ -58,6 +61,11 @@ class ObjCVideoEncoder : public VideoEncoder {
         if ([info isKindOfClass:[RTC_OBJC_TYPE(RTCCodecSpecificInfoH264) class]]) {
           codecSpecificInfo =
               [(RTC_OBJC_TYPE(RTCCodecSpecificInfoH264) *)info nativeCodecSpecificInfo];
+#ifndef DISABLE_H265
+        } else if ([NSStringFromClass([info class]) isEqual:@"RTCCodecSpecificInfoH265"]) {
+        // } else if ([info isKindOfClass:[RTCCodecSpecificInfoH265 class]]) {
+          codecSpecificInfo = [(RTCCodecSpecificInfoH265 *)info nativeCodecSpecificInfo];
+#endif
         }
 
         EncodedImageCallback::Result res = callback->OnEncodedImage(encodedImage, &codecSpecificInfo);
@@ -178,7 +186,8 @@ std::unique_ptr<VideoEncoder> ObjCVideoEncoderFactory::CreateVideoEncoder(
   RTC_OBJC_TYPE(RTCVideoCodecInfo) *info =
       [[RTC_OBJC_TYPE(RTCVideoCodecInfo) alloc] initWithNativeSdpVideoFormat:format];
   id<RTC_OBJC_TYPE(RTCVideoEncoder)> encoder = [encoder_factory_ createEncoder:info];
-  if ([encoder isKindOfClass:[RTC_OBJC_TYPE(RTCWrappedNativeVideoEncoder) class]]) {
+  // if ([encoder isKindOfClass:[RTC_OBJC_TYPE(RTCWrappedNativeVideoEncoder) class]]) {
+  if ([info.name isEqual:@"VP8"] || [info.name isEqual:@"VP9"]) {
     return [(RTC_OBJC_TYPE(RTCWrappedNativeVideoEncoder) *)encoder releaseWrappedEncoder];
   } else {
     return std::unique_ptr<ObjCVideoEncoder>(new ObjCVideoEncoder(encoder));

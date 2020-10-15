@@ -1009,5 +1009,23 @@ void VideoReceiveStream2::GenerateKeyFrame() {
   keyframe_generation_requested_ = true;
 }
 
+#ifndef DISABLE_RECORDER
+void VideoReceiveStream2::InjectRecorder(Recorder* recorder) {
+  RTC_LOG(LS_ERROR) << "void InjectRecorder(Recorder* recorder) is not implemented.";
+  RTC_NOTREACHED();
+  // char log_buf[16];
+  // snprintf(log_buf, sizeof(log_buf) - 1, "%p", recorder);
+  // RTC_LOG(LS_INFO) << "VideoReceiveStream2::InjectRecorder " << log_buf;
+  // {
+  //   rtc::CritScope lock(&recorder_lock_);
+  //   recorder_ = recorder;
+  // }
+
+  // if (recorder) {
+  //   GenerateKeyFrame();
+  // }
+}
+#endif
+
 }  // namespace internal
 }  // namespace webrtc

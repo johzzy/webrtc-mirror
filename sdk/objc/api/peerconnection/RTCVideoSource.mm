@@ -26,6 +26,7 @@ static webrtc::ObjCVideoTrackSource *getObjCVideoSource(
 // info.
 @implementation RTC_OBJC_TYPE (RTCVideoSource) {
   rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> _nativeVideoSource;
+  id<CFVideoProcessor> _videoProcessor;
 }
 
 - (instancetype)initWithFactory:(RTC_OBJC_TYPE(RTCPeerConnectionFactory) *)factory
@@ -37,6 +38,7 @@ static webrtc::ObjCVideoTrackSource *getObjCVideoSource(
                   nativeMediaSource:nativeVideoSource
                                type:RTCMediaSourceTypeVideo]) {
     _nativeVideoSource = nativeVideoSource;
+    _videoProcessor = nil;
   }
   return self;
 }
@@ -71,6 +73,25 @@ static webrtc::ObjCVideoTrackSource *getObjCVideoSource(
 
 - (void)adaptOutputFormatToWidth:(int)width height:(int)height fps:(int)fps {
   getObjCVideoSource(_nativeVideoSource)->OnOutputFormatRequest(width, height, fps);
+}
+
+// - (void)setVideoProcessor:(id<CFVideoProcessor>)processor {
+//   @synchronized (self) {
+//     if (_videoProcessor) {
+//       [_videoProcessor setVideoProcessorDelegate:nil];
+//     }
+//     _videoProcessor = processor;
+//     if (_videoProcessor) {
+//       [_videoProcessor setVideoProcessorDelegate:self];
+//     }
+//   }
+// }
+
+- (void)onProcessedVideoFrame:(RTCVideoFrame *)frame {
+  webrtc::ObjCVideoTrackSource *objcSource = getObjCVideoSource(_nativeVideoSource);
+  if (objcSource) {
+    objcSource->OnCapturedFrame(frame);
+  }
 }
 
 #pragma mark - Private
