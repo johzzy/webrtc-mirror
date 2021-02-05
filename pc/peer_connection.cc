@@ -2155,9 +2155,10 @@ bool PeerConnection::GetSslRole(const std::string& content_name,
 
 int32_t PeerConnection::StartRecorder(int32_t dir, std::string path) {
   if (!worker_thread()->IsCurrent()) {
-    return worker_thread()->Invoke<int32_t>(
-        RTC_FROM_HERE, rtc::Bind(&PeerConnection::StartRecorder, this, dir,
-                                 path));
+    return worker_thread()->Invoke<int32_t>(RTC_FROM_HERE, [this, dir, path] {
+      RTC_DCHECK_RUN_ON(worker_thread());
+      return StartRecorder(dir, path);
+    });
   }
   RTC_DCHECK_RUN_ON(worker_thread());
   RTC_DCHECK(call_);
@@ -2166,8 +2167,10 @@ int32_t PeerConnection::StartRecorder(int32_t dir, std::string path) {
 
 int32_t PeerConnection::StopRecorder(int32_t dir) {
   if (!worker_thread()->IsCurrent()) {
-    return worker_thread()->Invoke<int32_t>(
-        RTC_FROM_HERE, rtc::Bind(&PeerConnection::StopRecorder, this, dir));
+    return worker_thread()->Invoke<int32_t>(RTC_FROM_HERE, [this, dir] {
+      RTC_DCHECK_RUN_ON(worker_thread());
+      return StopRecorder(dir);
+    });
   }
   RTC_DCHECK_RUN_ON(worker_thread());
   RTC_DCHECK(call_);
