@@ -48,6 +48,7 @@ if (is_android) {
       ":libjingle_peerconnection_metrics_default_java",
       ":libvpx_vp8_java",
       ":libvpx_vp9_java",
+      ":h264_java",
       ":logging_java",
       ":peerconnection_java",
       ":screencapturer_java",
@@ -524,6 +525,19 @@ if (is_android) {
       "//rtc_base:base_java",
     ]
   }
+  rtc_android_library("h264_java") {
+    visibility = [ "*" ]
+    sources = [
+      "api/org/webrtc/H264Encoder.java",
+      "api/org/webrtc/H264Decoder.java",
+    ]
+    deps = [
+      ":base_java",
+      ":video_api_java",
+      ":video_java",
+      "//rtc_base:base_java",
+    ]
+  }
 
   rtc_android_library("dav1d_java") {
     visibility = [ "*" ]
@@ -543,6 +557,7 @@ if (is_android) {
       ":libaom_av1_java",
       ":libvpx_vp8_java",
       ":libvpx_vp9_java",
+      ":h264_java",
       ":video_api_java",
       ":video_java",
       "//rtc_base:base_java",
@@ -1139,6 +1154,18 @@ if (current_os == "linux" || is_android) {
     ]
   }
 
+  rtc_library("h264_jni") {
+    visibility = [ "*" ]
+    allow_poison = [ "software_video_codecs" ]
+    sources = [ "src/jni/h264_codec.cc" ]
+    deps = [
+      ":base_jni",
+      ":generated_h264_jni",
+      ":video_jni",
+      "../../modules/video_coding:webrtc_h264",
+    ]
+  }
+
   rtc_library("logging_jni") {
     visibility = [ "*" ]
     sources = [
@@ -1372,6 +1399,15 @@ if (current_os == "linux" || is_android) {
 
   generate_jni("generated_libaom_av1_decoder_if_supported_jni") {
     sources = [ "api/org/webrtc/LibaomAv1Decoder.java" ]
+
+    namespace = "webrtc::jni"
+    jni_generator_include = "//sdk/android/src/jni/jni_generator_helper.h"
+  }
+  generate_jni("generated_h264_jni") {
+    sources = [
+      "api/org/webrtc/H264Decoder.java",
+      "api/org/webrtc/H264Encoder.java",
+    ]
 
     namespace = "webrtc::jni"
     jni_generator_include = "//sdk/android/src/jni/jni_generator_helper.h"

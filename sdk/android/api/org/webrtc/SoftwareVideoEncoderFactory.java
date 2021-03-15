@@ -43,6 +43,10 @@ public class SoftwareVideoEncoderFactory implements VideoEncoderFactory {
   static VideoCodecInfo[] supportedCodecs() {
     List<VideoCodecInfo> codecs = new ArrayList<VideoCodecInfo>();
 
+    // NOTE(h264-fmtp): 'level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42e01f' for h264 encoder
+    // a=fmtp:102 level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42e01f
+    boolean highProfile = false;
+    codecs.add(new VideoCodecInfo(VideoCodecMimeType.H264.name(), H264Utils.getDefaultH264Params(highProfile)));
     codecs.add(new VideoCodecInfo(VideoCodecMimeType.VP8.name(), new HashMap<>()));
     if (LibvpxVp9Encoder.nativeIsSupported()) {
       codecs.add(new VideoCodecInfo(VideoCodecMimeType.VP9.name(), new HashMap<>()));

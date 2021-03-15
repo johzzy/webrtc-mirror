@@ -762,6 +762,10 @@ WebRtcVideoChannel::~WebRtcVideoChannel() {
     delete kv.second;
 }
 
+// NOTE(h264-fmtp): 'level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42e01f'
+constexpr auto kSkipIsSameCodecInSelectSendVideoCodecs = true;
+constexpr auto kSkipFindMatchingCodecInGetChangedRecvParameters = true;
+
 std::vector<WebRtcVideoChannel::VideoCodecSettings>
 WebRtcVideoChannel::SelectSendVideoCodecs(
     const std::vector<VideoCodecSettings>& remote_mapped_codecs) const {
@@ -774,6 +778,7 @@ WebRtcVideoChannel::SelectSendVideoCodecs(
   // preference second.
   std::vector<VideoCodecSettings> encoders;
   for (const VideoCodecSettings& remote_codec : remote_mapped_codecs) {
+    RTC_LOG(LS_ERROR) << "// NOTE(h264-fmtp): 'level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42e01f' for h264 encoder remote_codec:" << remote_codec.codec.ToString();
     for (auto format_it = sdp_formats.begin();
          format_it != sdp_formats.end();) {
       // For H264, we will limit the encode level to the remote offered level
@@ -781,7 +786,8 @@ WebRtcVideoChannel::SelectSendVideoCodecs(
       // following the spec in https://tools.ietf.org/html/rfc6184#section-8.2.2
       // since we should limit the encode level to the lower of local and remote
       // level when level asymmetry is not allowed.
-      if (format_it->IsSameCodec(
+      RTC_LOG(LS_ERROR) << "// NOTE(h264-fmtp): 'level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42e01f' for h264 encoder. sdp_format:" << format_it->ToString();
+      if (kSkipIsSameCodecInSelectSendVideoCodecs || format_it->IsSameCodec(
               {remote_codec.codec.name, remote_codec.codec.params})) {
         encoders.push_back(remote_codec);
 
@@ -1196,12 +1202,23 @@ bool WebRtcVideoChannel::GetChangedRecvParameters(
         GetPayloadTypesAndDefaultCodecs(decoder_factory_,
                                         /*is_decoder_factory=*/true,
                                         /*include_rtx=*/true, call_->trials());
+    for (auto& codec: local_supported_codecs) {
+      RTC_LOG(LS_ERROR)
+        << "// NOTE(h264-fmtp): 'level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42e01f' for h264 decoder. local_supported_codecs="
+        << codec.ToString();
+    }
     for (const VideoCodecSettings& mapped_codec : mapped_codecs) {
+      RTC_LOG(LS_ERROR)
+          << "// NOTE(h264-fmtp): 'level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42e01f' for h264 decoder. mapped_codec="
+          << mapped_codec.codec.ToString();
       if (!FindMatchingCodec(local_supported_codecs, mapped_codec.codec)) {
         RTC_LOG(LS_ERROR)
             << "GetChangedRecvParameters called with unsupported video codec: "
             << mapped_codec.codec.ToString();
-        return false;
+        // NOTE(h264-fmtp): 'level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42e01f' for h264 decoder
+        if (!kSkipFindMatchingCodecInGetChangedRecvParameters) {
+          return false;
+        }
       }
     }
   }

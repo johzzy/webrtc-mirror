@@ -279,6 +279,11 @@ std::string VideoCodec::ToString() const {
     sb << ":" << *packetization;
   }
   sb << "]";
+  auto& builder = sb;
+  builder << ", parameters: {";
+  for (const auto& kv : params)
+    builder << " " << kv.first << "=" << kv.second;
+  builder << " }";
   return sb.str();
 }
 

@@ -1,0 +1,649 @@
+diff --git a/chromium/config/Chrome/android/arm-neon/config.h b/chromium/config/Chrome/android/arm-neon/config.h
+index 30c9a416e6..070cb7140a 100644
+--- a/chromium/config/Chrome/android/arm-neon/config.h
++++ b/chromium/config/Chrome/android/arm-neon/config.h
+@@ -816,7 +816,7 @@
+ #define CONFIG_H263I_DECODER 0
+ #define CONFIG_H263P_DECODER 0
+ #define CONFIG_H263_V4L2M2M_DECODER 0
+-#define CONFIG_H264_DECODER 0
++#define CONFIG_H264_DECODER 1
+ #define CONFIG_H264_CRYSTALHD_DECODER 0
+ #define CONFIG_H264_V4L2M2M_DECODER 0
+ #define CONFIG_H264_MEDIACODEC_DECODER 0
+diff --git a/chromium/config/Chrome/android/arm-neon/libavcodec/codec_list.c b/chromium/config/Chrome/android/arm-neon/libavcodec/codec_list.c
+index 4c1c44c96c..c08ffb0da9 100644
+--- a/chromium/config/Chrome/android/arm-neon/libavcodec/codec_list.c
++++ b/chromium/config/Chrome/android/arm-neon/libavcodec/codec_list.c
+@@ -13,4 +13,5 @@ static const AVCodec * const codec_list[] = {
+     &ff_pcm_s32le_decoder,
+     &ff_pcm_u8_decoder,
+     &ff_libopus_decoder,
++    &ff_h264_decoder,
+     NULL };
+diff --git a/chromium/config/Chrome/android/arm-neon/libavcodec/parser_list.c b/chromium/config/Chrome/android/arm-neon/libavcodec/parser_list.c
+index b1e4dd0061..42215fccc2 100644
+--- a/chromium/config/Chrome/android/arm-neon/libavcodec/parser_list.c
++++ b/chromium/config/Chrome/android/arm-neon/libavcodec/parser_list.c
+@@ -5,4 +5,5 @@ static const AVCodecParser * const parser_list[] = {
+     &ff_opus_parser,
+     &ff_vorbis_parser,
+     &ff_vp9_parser,
++    &ff_h264_parser,
+     NULL };
+diff --git a/chromium/config/Chrome/android/arm64/config.h b/chromium/config/Chrome/android/arm64/config.h
+index 46ea3d4a1f..ce31fa2b6c 100644
+--- a/chromium/config/Chrome/android/arm64/config.h
++++ b/chromium/config/Chrome/android/arm64/config.h
+@@ -816,7 +816,7 @@
+ #define CONFIG_H263I_DECODER 0
+ #define CONFIG_H263P_DECODER 0
+ #define CONFIG_H263_V4L2M2M_DECODER 0
+-#define CONFIG_H264_DECODER 0
++#define CONFIG_H264_DECODER 1
+ #define CONFIG_H264_CRYSTALHD_DECODER 0
+ #define CONFIG_H264_V4L2M2M_DECODER 0
+ #define CONFIG_H264_MEDIACODEC_DECODER 0
+diff --git a/chromium/config/Chrome/android/arm64/libavcodec/codec_list.c b/chromium/config/Chrome/android/arm64/libavcodec/codec_list.c
+index 4c1c44c96c..c08ffb0da9 100644
+--- a/chromium/config/Chrome/android/arm64/libavcodec/codec_list.c
++++ b/chromium/config/Chrome/android/arm64/libavcodec/codec_list.c
+@@ -13,4 +13,5 @@ static const AVCodec * const codec_list[] = {
+     &ff_pcm_s32le_decoder,
+     &ff_pcm_u8_decoder,
+     &ff_libopus_decoder,
++    &ff_h264_decoder,
+     NULL };
+diff --git a/chromium/config/Chrome/android/arm64/libavcodec/parser_list.c b/chromium/config/Chrome/android/arm64/libavcodec/parser_list.c
+index b1e4dd0061..42215fccc2 100644
+--- a/chromium/config/Chrome/android/arm64/libavcodec/parser_list.c
++++ b/chromium/config/Chrome/android/arm64/libavcodec/parser_list.c
+@@ -5,4 +5,5 @@ static const AVCodecParser * const parser_list[] = {
+     &ff_opus_parser,
+     &ff_vorbis_parser,
+     &ff_vp9_parser,
++    &ff_h264_parser,
+     NULL };
+diff --git a/chromium/config/Chrome/android/ia32/config.asm b/chromium/config/Chrome/android/ia32/config.asm
+index 85346d428c..29f62ea5c8 100644
+--- a/chromium/config/Chrome/android/ia32/config.asm
++++ b/chromium/config/Chrome/android/ia32/config.asm
+@@ -682,7 +682,7 @@
+ %define CONFIG_H263_DECODER 0
+ %define CONFIG_H263I_DECODER 0
+ %define CONFIG_H263P_DECODER 0
+-%define CONFIG_H264_DECODER 0
++%define CONFIG_H264_DECODER 1
+ %define CONFIG_H264_CRYSTALHD_DECODER 0
+ %define CONFIG_H264_MMAL_DECODER 0
+ %define CONFIG_H264_QSV_DECODER 0
+diff --git a/chromium/config/Chrome/android/ia32/config.h b/chromium/config/Chrome/android/ia32/config.h
+index c3ac6b77a1..4a0ad2b6d5 100644
+--- a/chromium/config/Chrome/android/ia32/config.h
++++ b/chromium/config/Chrome/android/ia32/config.h
+@@ -816,7 +816,7 @@
+ #define CONFIG_H263I_DECODER 0
+ #define CONFIG_H263P_DECODER 0
+ #define CONFIG_H263_V4L2M2M_DECODER 0
+-#define CONFIG_H264_DECODER 0
++#define CONFIG_H264_DECODER 1
+ #define CONFIG_H264_CRYSTALHD_DECODER 0
+ #define CONFIG_H264_V4L2M2M_DECODER 0
+ #define CONFIG_H264_MEDIACODEC_DECODER 0
+diff --git a/chromium/config/Chrome/android/ia32/libavcodec/codec_list.c b/chromium/config/Chrome/android/ia32/libavcodec/codec_list.c
+index 4c1c44c96c..c08ffb0da9 100644
+--- a/chromium/config/Chrome/android/ia32/libavcodec/codec_list.c
++++ b/chromium/config/Chrome/android/ia32/libavcodec/codec_list.c
+@@ -13,4 +13,5 @@ static const AVCodec * const codec_list[] = {
+     &ff_pcm_s32le_decoder,
+     &ff_pcm_u8_decoder,
+     &ff_libopus_decoder,
++    &ff_h264_decoder,
+     NULL };
+diff --git a/chromium/config/Chrome/android/ia32/libavcodec/parser_list.c b/chromium/config/Chrome/android/ia32/libavcodec/parser_list.c
+index b1e4dd0061..42215fccc2 100644
+--- a/chromium/config/Chrome/android/ia32/libavcodec/parser_list.c
++++ b/chromium/config/Chrome/android/ia32/libavcodec/parser_list.c
+@@ -5,4 +5,5 @@ static const AVCodecParser * const parser_list[] = {
+     &ff_opus_parser,
+     &ff_vorbis_parser,
+     &ff_vp9_parser,
++    &ff_h264_parser,
+     NULL };
+diff --git a/chromium/config/Chrome/android/mips64el/config.h b/chromium/config/Chrome/android/mips64el/config.h
+index e955d1030b..5b4533c3e3 100644
+--- a/chromium/config/Chrome/android/mips64el/config.h
++++ b/chromium/config/Chrome/android/mips64el/config.h
+@@ -790,7 +790,7 @@
+ #define CONFIG_H263I_DECODER 0
+ #define CONFIG_H263P_DECODER 0
+ #define CONFIG_H263_V4L2M2M_DECODER 0
+-#define CONFIG_H264_DECODER 0
++#define CONFIG_H264_DECODER 1
+ #define CONFIG_H264_CRYSTALHD_DECODER 0
+ #define CONFIG_H264_V4L2M2M_DECODER 0
+ #define CONFIG_H264_MEDIACODEC_DECODER 0
+diff --git a/chromium/config/Chrome/android/mips64el/libavcodec/codec_list.c b/chromium/config/Chrome/android/mips64el/libavcodec/codec_list.c
+index 4c1c44c96c..c08ffb0da9 100644
+--- a/chromium/config/Chrome/android/mips64el/libavcodec/codec_list.c
++++ b/chromium/config/Chrome/android/mips64el/libavcodec/codec_list.c
+@@ -13,4 +13,5 @@ static const AVCodec * const codec_list[] = {
+     &ff_pcm_s32le_decoder,
+     &ff_pcm_u8_decoder,
+     &ff_libopus_decoder,
++    &ff_h264_decoder,
+     NULL };
+diff --git a/chromium/config/Chrome/android/mips64el/libavcodec/parser_list.c b/chromium/config/Chrome/android/mips64el/libavcodec/parser_list.c
+index b1e4dd0061..42215fccc2 100644
+--- a/chromium/config/Chrome/android/mips64el/libavcodec/parser_list.c
++++ b/chromium/config/Chrome/android/mips64el/libavcodec/parser_list.c
+@@ -5,4 +5,5 @@ static const AVCodecParser * const parser_list[] = {
+     &ff_opus_parser,
+     &ff_vorbis_parser,
+     &ff_vp9_parser,
++    &ff_h264_parser,
+     NULL };
+diff --git a/chromium/config/Chrome/android/mipsel/config.h b/chromium/config/Chrome/android/mipsel/config.h
+index be3e0fa9fb..9edad64ea1 100644
+--- a/chromium/config/Chrome/android/mipsel/config.h
++++ b/chromium/config/Chrome/android/mipsel/config.h
+@@ -790,7 +790,7 @@
+ #define CONFIG_H263I_DECODER 0
+ #define CONFIG_H263P_DECODER 0
+ #define CONFIG_H263_V4L2M2M_DECODER 0
+-#define CONFIG_H264_DECODER 0
++#define CONFIG_H264_DECODER 1
+ #define CONFIG_H264_CRYSTALHD_DECODER 0
+ #define CONFIG_H264_V4L2M2M_DECODER 0
+ #define CONFIG_H264_MEDIACODEC_DECODER 0
+diff --git a/chromium/config/Chrome/android/mipsel/libavcodec/codec_list.c b/chromium/config/Chrome/android/mipsel/libavcodec/codec_list.c
+index 4c1c44c96c..c08ffb0da9 100644
+--- a/chromium/config/Chrome/android/mipsel/libavcodec/codec_list.c
++++ b/chromium/config/Chrome/android/mipsel/libavcodec/codec_list.c
+@@ -13,4 +13,5 @@ static const AVCodec * const codec_list[] = {
+     &ff_pcm_s32le_decoder,
+     &ff_pcm_u8_decoder,
+     &ff_libopus_decoder,
++    &ff_h264_decoder,
+     NULL };
+diff --git a/chromium/config/Chrome/android/mipsel/libavcodec/parser_list.c b/chromium/config/Chrome/android/mipsel/libavcodec/parser_list.c
+index b1e4dd0061..42215fccc2 100644
+--- a/chromium/config/Chrome/android/mipsel/libavcodec/parser_list.c
++++ b/chromium/config/Chrome/android/mipsel/libavcodec/parser_list.c
+@@ -5,4 +5,5 @@ static const AVCodecParser * const parser_list[] = {
+     &ff_opus_parser,
+     &ff_vorbis_parser,
+     &ff_vp9_parser,
++    &ff_h264_parser,
+     NULL };
+diff --git a/chromium/config/Chrome/android/x64/config.asm b/chromium/config/Chrome/android/x64/config.asm
+index 85a6f2a53d..d5b40e06fb 100644
+--- a/chromium/config/Chrome/android/x64/config.asm
++++ b/chromium/config/Chrome/android/x64/config.asm
+@@ -801,7 +801,7 @@
+ %define CONFIG_H263I_DECODER 0
+ %define CONFIG_H263P_DECODER 0
+ %define CONFIG_H263_V4L2M2M_DECODER 0
+-%define CONFIG_H264_DECODER 0
++%define CONFIG_H264_DECODER 1
+ %define CONFIG_H264_CRYSTALHD_DECODER 0
+ %define CONFIG_H264_V4L2M2M_DECODER 0
+ %define CONFIG_H264_MEDIACODEC_DECODER 0
+diff --git a/chromium/config/Chrome/android/x64/config.h b/chromium/config/Chrome/android/x64/config.h
+index fdecbb6ea9..f27229621b 100644
+--- a/chromium/config/Chrome/android/x64/config.h
++++ b/chromium/config/Chrome/android/x64/config.h
+@@ -816,7 +816,7 @@
+ #define CONFIG_H263I_DECODER 0
+ #define CONFIG_H263P_DECODER 0
+ #define CONFIG_H263_V4L2M2M_DECODER 0
+-#define CONFIG_H264_DECODER 0
++#define CONFIG_H264_DECODER 1
+ #define CONFIG_H264_CRYSTALHD_DECODER 0
+ #define CONFIG_H264_V4L2M2M_DECODER 0
+ #define CONFIG_H264_MEDIACODEC_DECODER 0
+diff --git a/chromium/config/Chrome/android/x64/libavcodec/codec_list.c b/chromium/config/Chrome/android/x64/libavcodec/codec_list.c
+index 4c1c44c96c..c08ffb0da9 100644
+--- a/chromium/config/Chrome/android/x64/libavcodec/codec_list.c
++++ b/chromium/config/Chrome/android/x64/libavcodec/codec_list.c
+@@ -13,4 +13,5 @@ static const AVCodec * const codec_list[] = {
+     &ff_pcm_s32le_decoder,
+     &ff_pcm_u8_decoder,
+     &ff_libopus_decoder,
++    &ff_h264_decoder,
+     NULL };
+diff --git a/chromium/config/Chrome/android/x64/libavcodec/parser_list.c b/chromium/config/Chrome/android/x64/libavcodec/parser_list.c
+index b1e4dd0061..42215fccc2 100644
+--- a/chromium/config/Chrome/android/x64/libavcodec/parser_list.c
++++ b/chromium/config/Chrome/android/x64/libavcodec/parser_list.c
+@@ -5,4 +5,5 @@ static const AVCodecParser * const parser_list[] = {
+     &ff_opus_parser,
+     &ff_vorbis_parser,
+     &ff_vp9_parser,
++    &ff_h264_parser,
+     NULL };
+diff --git a/chromium/config/Chrome/mac/arm64/libavcodec/codec_list.c b/chromium/config/Chrome/mac/arm64/libavcodec/codec_list.c
+index 49f757b2d8..7ec90dbabc 100644
+--- a/chromium/config/Chrome/mac/arm64/libavcodec/codec_list.c
++++ b/chromium/config/Chrome/mac/arm64/libavcodec/codec_list.c
+@@ -17,4 +17,5 @@ static const AVCodec * const codec_list[] = {
+     &ff_pcm_s32le_decoder,
+     &ff_pcm_u8_decoder,
+     &ff_libopus_decoder,
++    &ff_h264_decoder,
+     NULL };
+diff --git a/chromium/config/Chrome/mac/arm64/libavcodec/parser_list.c b/chromium/config/Chrome/mac/arm64/libavcodec/parser_list.c
+index 50acddb28e..03c65bb98b 100644
+--- a/chromium/config/Chrome/mac/arm64/libavcodec/parser_list.c
++++ b/chromium/config/Chrome/mac/arm64/libavcodec/parser_list.c
+@@ -8,4 +8,5 @@ static const AVCodecParser * const parser_list[] = {
+     &ff_vp3_parser,
+     &ff_vp8_parser,
+     &ff_vp9_parser,
++    &ff_h264_parser,
+     NULL };
+diff --git a/chromium/config/Chrome/mac/x64/libavcodec/codec_list.c b/chromium/config/Chrome/mac/x64/libavcodec/codec_list.c
+index 49f757b2d8..7ec90dbabc 100644
+--- a/chromium/config/Chrome/mac/x64/libavcodec/codec_list.c
++++ b/chromium/config/Chrome/mac/x64/libavcodec/codec_list.c
+@@ -17,4 +17,5 @@ static const AVCodec * const codec_list[] = {
+     &ff_pcm_s32le_decoder,
+     &ff_pcm_u8_decoder,
+     &ff_libopus_decoder,
++    &ff_h264_decoder,
+     NULL };
+diff --git a/chromium/config/Chrome/mac/x64/libavcodec/parser_list.c b/chromium/config/Chrome/mac/x64/libavcodec/parser_list.c
+index 50acddb28e..03c65bb98b 100644
+--- a/chromium/config/Chrome/mac/x64/libavcodec/parser_list.c
++++ b/chromium/config/Chrome/mac/x64/libavcodec/parser_list.c
+@@ -8,4 +8,5 @@ static const AVCodecParser * const parser_list[] = {
+     &ff_vp3_parser,
+     &ff_vp8_parser,
+     &ff_vp9_parser,
++    &ff_h264_parser,
+     NULL };
+diff --git a/chromium/config/Chromium/android/arm-neon/config.h b/chromium/config/Chromium/android/arm-neon/config.h
+index 8d91460bdc..cb89c921d9 100644
+--- a/chromium/config/Chromium/android/arm-neon/config.h
++++ b/chromium/config/Chromium/android/arm-neon/config.h
+@@ -816,7 +816,7 @@
+ #define CONFIG_H263I_DECODER 0
+ #define CONFIG_H263P_DECODER 0
+ #define CONFIG_H263_V4L2M2M_DECODER 0
+-#define CONFIG_H264_DECODER 0
++#define CONFIG_H264_DECODER 1
+ #define CONFIG_H264_CRYSTALHD_DECODER 0
+ #define CONFIG_H264_V4L2M2M_DECODER 0
+ #define CONFIG_H264_MEDIACODEC_DECODER 0
+diff --git a/chromium/config/Chromium/android/arm-neon/libavcodec/codec_list.c b/chromium/config/Chromium/android/arm-neon/libavcodec/codec_list.c
+index 894ef578af..4f52ca06b0 100644
+--- a/chromium/config/Chromium/android/arm-neon/libavcodec/codec_list.c
++++ b/chromium/config/Chromium/android/arm-neon/libavcodec/codec_list.c
+@@ -12,4 +12,5 @@ static const AVCodec * const codec_list[] = {
+     &ff_pcm_s32le_decoder,
+     &ff_pcm_u8_decoder,
+     &ff_libopus_decoder,
++    &ff_h264_decoder,
+     NULL };
+diff --git a/chromium/config/Chromium/android/arm-neon/libavcodec/parser_list.c b/chromium/config/Chromium/android/arm-neon/libavcodec/parser_list.c
+index fdc533b38f..11b2a58b2c 100644
+--- a/chromium/config/Chromium/android/arm-neon/libavcodec/parser_list.c
++++ b/chromium/config/Chromium/android/arm-neon/libavcodec/parser_list.c
+@@ -4,4 +4,5 @@ static const AVCodecParser * const parser_list[] = {
+     &ff_opus_parser,
+     &ff_vorbis_parser,
+     &ff_vp9_parser,
++    &ff_h264_parser,
+     NULL };
+diff --git a/chromium/config/Chromium/android/arm64/config.h b/chromium/config/Chromium/android/arm64/config.h
+index a666622335..713c1501f9 100644
+--- a/chromium/config/Chromium/android/arm64/config.h
++++ b/chromium/config/Chromium/android/arm64/config.h
+@@ -816,7 +816,7 @@
+ #define CONFIG_H263I_DECODER 0
+ #define CONFIG_H263P_DECODER 0
+ #define CONFIG_H263_V4L2M2M_DECODER 0
+-#define CONFIG_H264_DECODER 0
++#define CONFIG_H264_DECODER 1
+ #define CONFIG_H264_CRYSTALHD_DECODER 0
+ #define CONFIG_H264_V4L2M2M_DECODER 0
+ #define CONFIG_H264_MEDIACODEC_DECODER 0
+diff --git a/chromium/config/Chromium/android/arm64/libavcodec/codec_list.c b/chromium/config/Chromium/android/arm64/libavcodec/codec_list.c
+index 894ef578af..4f52ca06b0 100644
+--- a/chromium/config/Chromium/android/arm64/libavcodec/codec_list.c
++++ b/chromium/config/Chromium/android/arm64/libavcodec/codec_list.c
+@@ -12,4 +12,5 @@ static const AVCodec * const codec_list[] = {
+     &ff_pcm_s32le_decoder,
+     &ff_pcm_u8_decoder,
+     &ff_libopus_decoder,
++    &ff_h264_decoder,
+     NULL };
+diff --git a/chromium/config/Chromium/android/arm64/libavcodec/parser_list.c b/chromium/config/Chromium/android/arm64/libavcodec/parser_list.c
+index fdc533b38f..11b2a58b2c 100644
+--- a/chromium/config/Chromium/android/arm64/libavcodec/parser_list.c
++++ b/chromium/config/Chromium/android/arm64/libavcodec/parser_list.c
+@@ -4,4 +4,5 @@ static const AVCodecParser * const parser_list[] = {
+     &ff_opus_parser,
+     &ff_vorbis_parser,
+     &ff_vp9_parser,
++    &ff_h264_parser,
+     NULL };
+diff --git a/chromium/config/Chromium/android/ia32/config.h b/chromium/config/Chromium/android/ia32/config.h
+index 12ac46c5bd..a601e58443 100644
+--- a/chromium/config/Chromium/android/ia32/config.h
++++ b/chromium/config/Chromium/android/ia32/config.h
+@@ -816,7 +816,7 @@
+ #define CONFIG_H263I_DECODER 0
+ #define CONFIG_H263P_DECODER 0
+ #define CONFIG_H263_V4L2M2M_DECODER 0
+-#define CONFIG_H264_DECODER 0
++#define CONFIG_H264_DECODER 1
+ #define CONFIG_H264_CRYSTALHD_DECODER 0
+ #define CONFIG_H264_V4L2M2M_DECODER 0
+ #define CONFIG_H264_MEDIACODEC_DECODER 0
+diff --git a/chromium/config/Chromium/android/ia32/libavcodec/codec_list.c b/chromium/config/Chromium/android/ia32/libavcodec/codec_list.c
+index 894ef578af..4f52ca06b0 100644
+--- a/chromium/config/Chromium/android/ia32/libavcodec/codec_list.c
++++ b/chromium/config/Chromium/android/ia32/libavcodec/codec_list.c
+@@ -12,4 +12,5 @@ static const AVCodec * const codec_list[] = {
+     &ff_pcm_s32le_decoder,
+     &ff_pcm_u8_decoder,
+     &ff_libopus_decoder,
++    &ff_h264_decoder,
+     NULL };
+diff --git a/chromium/config/Chromium/android/ia32/libavcodec/parser_list.c b/chromium/config/Chromium/android/ia32/libavcodec/parser_list.c
+index fdc533b38f..11b2a58b2c 100644
+--- a/chromium/config/Chromium/android/ia32/libavcodec/parser_list.c
++++ b/chromium/config/Chromium/android/ia32/libavcodec/parser_list.c
+@@ -4,4 +4,5 @@ static const AVCodecParser * const parser_list[] = {
+     &ff_opus_parser,
+     &ff_vorbis_parser,
+     &ff_vp9_parser,
++    &ff_h264_parser,
+     NULL };
+diff --git a/chromium/config/Chromium/android/mips64el/config.h b/chromium/config/Chromium/android/mips64el/config.h
+index 1758be3a25..280576d3ef 100644
+--- a/chromium/config/Chromium/android/mips64el/config.h
++++ b/chromium/config/Chromium/android/mips64el/config.h
+@@ -790,7 +790,7 @@
+ #define CONFIG_H263I_DECODER 0
+ #define CONFIG_H263P_DECODER 0
+ #define CONFIG_H263_V4L2M2M_DECODER 0
+-#define CONFIG_H264_DECODER 0
++#define CONFIG_H264_DECODER 1
+ #define CONFIG_H264_CRYSTALHD_DECODER 0
+ #define CONFIG_H264_V4L2M2M_DECODER 0
+ #define CONFIG_H264_MEDIACODEC_DECODER 0
+diff --git a/chromium/config/Chromium/android/mips64el/libavcodec/codec_list.c b/chromium/config/Chromium/android/mips64el/libavcodec/codec_list.c
+index 894ef578af..4f52ca06b0 100644
+--- a/chromium/config/Chromium/android/mips64el/libavcodec/codec_list.c
++++ b/chromium/config/Chromium/android/mips64el/libavcodec/codec_list.c
+@@ -12,4 +12,5 @@ static const AVCodec * const codec_list[] = {
+     &ff_pcm_s32le_decoder,
+     &ff_pcm_u8_decoder,
+     &ff_libopus_decoder,
++    &ff_h264_decoder,
+     NULL };
+diff --git a/chromium/config/Chromium/android/mips64el/libavcodec/parser_list.c b/chromium/config/Chromium/android/mips64el/libavcodec/parser_list.c
+index fdc533b38f..11b2a58b2c 100644
+--- a/chromium/config/Chromium/android/mips64el/libavcodec/parser_list.c
++++ b/chromium/config/Chromium/android/mips64el/libavcodec/parser_list.c
+@@ -4,4 +4,5 @@ static const AVCodecParser * const parser_list[] = {
+     &ff_opus_parser,
+     &ff_vorbis_parser,
+     &ff_vp9_parser,
++    &ff_h264_parser,
+     NULL };
+diff --git a/chromium/config/Chromium/android/mipsel/config.h b/chromium/config/Chromium/android/mipsel/config.h
+index 89dabdf81d..9b663f1912 100644
+--- a/chromium/config/Chromium/android/mipsel/config.h
++++ b/chromium/config/Chromium/android/mipsel/config.h
+@@ -790,7 +790,7 @@
+ #define CONFIG_H263I_DECODER 0
+ #define CONFIG_H263P_DECODER 0
+ #define CONFIG_H263_V4L2M2M_DECODER 0
+-#define CONFIG_H264_DECODER 0
++#define CONFIG_H264_DECODER 1
+ #define CONFIG_H264_CRYSTALHD_DECODER 0
+ #define CONFIG_H264_V4L2M2M_DECODER 0
+ #define CONFIG_H264_MEDIACODEC_DECODER 0
+diff --git a/chromium/config/Chromium/android/mipsel/libavcodec/codec_list.c b/chromium/config/Chromium/android/mipsel/libavcodec/codec_list.c
+index 894ef578af..4f52ca06b0 100644
+--- a/chromium/config/Chromium/android/mipsel/libavcodec/codec_list.c
++++ b/chromium/config/Chromium/android/mipsel/libavcodec/codec_list.c
+@@ -12,4 +12,5 @@ static const AVCodec * const codec_list[] = {
+     &ff_pcm_s32le_decoder,
+     &ff_pcm_u8_decoder,
+     &ff_libopus_decoder,
++    &ff_h264_decoder,
+     NULL };
+diff --git a/chromium/config/Chromium/android/mipsel/libavcodec/parser_list.c b/chromium/config/Chromium/android/mipsel/libavcodec/parser_list.c
+index fdc533b38f..11b2a58b2c 100644
+--- a/chromium/config/Chromium/android/mipsel/libavcodec/parser_list.c
++++ b/chromium/config/Chromium/android/mipsel/libavcodec/parser_list.c
+@@ -4,4 +4,5 @@ static const AVCodecParser * const parser_list[] = {
+     &ff_opus_parser,
+     &ff_vorbis_parser,
+     &ff_vp9_parser,
++    &ff_h264_parser,
+     NULL };
+diff --git a/chromium/config/Chromium/android/x64/config.h b/chromium/config/Chromium/android/x64/config.h
+index 041d047d55..6d601c82ba 100644
+--- a/chromium/config/Chromium/android/x64/config.h
++++ b/chromium/config/Chromium/android/x64/config.h
+@@ -816,7 +816,7 @@
+ #define CONFIG_H263I_DECODER 0
+ #define CONFIG_H263P_DECODER 0
+ #define CONFIG_H263_V4L2M2M_DECODER 0
+-#define CONFIG_H264_DECODER 0
++#define CONFIG_H264_DECODER 1
+ #define CONFIG_H264_CRYSTALHD_DECODER 0
+ #define CONFIG_H264_V4L2M2M_DECODER 0
+ #define CONFIG_H264_MEDIACODEC_DECODER 0
+diff --git a/chromium/config/Chromium/android/x64/libavcodec/codec_list.c b/chromium/config/Chromium/android/x64/libavcodec/codec_list.c
+index 894ef578af..4f52ca06b0 100644
+--- a/chromium/config/Chromium/android/x64/libavcodec/codec_list.c
++++ b/chromium/config/Chromium/android/x64/libavcodec/codec_list.c
+@@ -12,4 +12,5 @@ static const AVCodec * const codec_list[] = {
+     &ff_pcm_s32le_decoder,
+     &ff_pcm_u8_decoder,
+     &ff_libopus_decoder,
++    &ff_h264_decoder,
+     NULL };
+diff --git a/chromium/config/Chromium/android/x64/libavcodec/parser_list.c b/chromium/config/Chromium/android/x64/libavcodec/parser_list.c
+index fdc533b38f..11b2a58b2c 100644
+--- a/chromium/config/Chromium/android/x64/libavcodec/parser_list.c
++++ b/chromium/config/Chromium/android/x64/libavcodec/parser_list.c
+@@ -4,4 +4,5 @@ static const AVCodecParser * const parser_list[] = {
+     &ff_opus_parser,
+     &ff_vorbis_parser,
+     &ff_vp9_parser,
++    &ff_h264_parser,
+     NULL };
+diff --git a/chromium/config/Chromium/mac/arm64/config.h b/chromium/config/Chromium/mac/arm64/config.h
+index 0413a39a49..e7adb22303 100644
+--- a/chromium/config/Chromium/mac/arm64/config.h
++++ b/chromium/config/Chromium/mac/arm64/config.h
+@@ -816,7 +816,7 @@
+ #define CONFIG_H263I_DECODER 0
+ #define CONFIG_H263P_DECODER 0
+ #define CONFIG_H263_V4L2M2M_DECODER 0
+-#define CONFIG_H264_DECODER 0
++#define CONFIG_H264_DECODER 1
+ #define CONFIG_H264_CRYSTALHD_DECODER 0
+ #define CONFIG_H264_V4L2M2M_DECODER 0
+ #define CONFIG_H264_MEDIACODEC_DECODER 0
+diff --git a/chromium/config/Chromium/mac/arm64/libavcodec/codec_list.c b/chromium/config/Chromium/mac/arm64/libavcodec/codec_list.c
+index 9407bd2775..88e5bc816a 100644
+--- a/chromium/config/Chromium/mac/arm64/libavcodec/codec_list.c
++++ b/chromium/config/Chromium/mac/arm64/libavcodec/codec_list.c
+@@ -15,4 +15,5 @@ static const AVCodec * const codec_list[] = {
+     &ff_pcm_s32le_decoder,
+     &ff_pcm_u8_decoder,
+     &ff_libopus_decoder,
++    &ff_h264_decoder,
+     NULL };
+diff --git a/chromium/config/Chromium/mac/arm64/libavcodec/parser_list.c b/chromium/config/Chromium/mac/arm64/libavcodec/parser_list.c
+index f81fbe8bbc..de009aa51f 100644
+--- a/chromium/config/Chromium/mac/arm64/libavcodec/parser_list.c
++++ b/chromium/config/Chromium/mac/arm64/libavcodec/parser_list.c
+@@ -6,4 +6,5 @@ static const AVCodecParser * const parser_list[] = {
+     &ff_vp3_parser,
+     &ff_vp8_parser,
+     &ff_vp9_parser,
++    &ff_h264_parser,
+     NULL };
+diff --git a/chromium/config/Chromium/mac/x64/config.h b/chromium/config/Chromium/mac/x64/config.h
+index 8f82810e50..2b8f06c7af 100644
+--- a/chromium/config/Chromium/mac/x64/config.h
++++ b/chromium/config/Chromium/mac/x64/config.h
+@@ -816,7 +816,7 @@
+ #define CONFIG_H263I_DECODER 0
+ #define CONFIG_H263P_DECODER 0
+ #define CONFIG_H263_V4L2M2M_DECODER 0
+-#define CONFIG_H264_DECODER 0
++#define CONFIG_H264_DECODER 1
+ #define CONFIG_H264_CRYSTALHD_DECODER 0
+ #define CONFIG_H264_V4L2M2M_DECODER 0
+ #define CONFIG_H264_MEDIACODEC_DECODER 0
+diff --git a/chromium/config/Chromium/mac/x64/libavcodec/codec_list.c b/chromium/config/Chromium/mac/x64/libavcodec/codec_list.c
+index 9407bd2775..88e5bc816a 100644
+--- a/chromium/config/Chromium/mac/x64/libavcodec/codec_list.c
++++ b/chromium/config/Chromium/mac/x64/libavcodec/codec_list.c
+@@ -15,4 +15,5 @@ static const AVCodec * const codec_list[] = {
+     &ff_pcm_s32le_decoder,
+     &ff_pcm_u8_decoder,
+     &ff_libopus_decoder,
++    &ff_h264_decoder,
+     NULL };
+diff --git a/chromium/config/Chromium/mac/x64/libavcodec/parser_list.c b/chromium/config/Chromium/mac/x64/libavcodec/parser_list.c
+index f81fbe8bbc..de009aa51f 100644
+--- a/chromium/config/Chromium/mac/x64/libavcodec/parser_list.c
++++ b/chromium/config/Chromium/mac/x64/libavcodec/parser_list.c
+@@ -6,4 +6,5 @@ static const AVCodecParser * const parser_list[] = {
+     &ff_vp3_parser,
+     &ff_vp8_parser,
+     &ff_vp9_parser,
++    &ff_h264_parser,
+     NULL };
+diff --git a/ffmpeg_generated.gni b/ffmpeg_generated.gni
+index 71f17d1735..69bfca6049 100644
+--- a/ffmpeg_generated.gni
++++ b/ffmpeg_generated.gni
+@@ -12,7 +12,7 @@ ffmpeg_c_sources = []
+ ffmpeg_gas_sources = []
+ ffmpeg_asm_sources = []
+ 
+-use_linux_config = is_linux || is_chromeos || is_fuchsia
++use_linux_config = is_linux || is_chromeos || is_fuchsia || is_android
+ 
+ if ((is_android && current_cpu == "arm" && arm_use_neon) || (is_android && current_cpu == "arm64") || (is_android && current_cpu == "x64") || (is_android && current_cpu == "x86") || (is_mac) || (is_win) || (use_linux_config)) {
+   ffmpeg_c_sources += [
+@@ -195,7 +195,7 @@ if ((is_android && current_cpu == "arm" && arm_use_neon) || (is_android && curre
+   ]
+ }
+ 
+-if ((is_mac) || (is_win) || (use_linux_config)) {
++if ((is_mac) || (is_win) || (use_linux_config) || (is_android)) {
+   ffmpeg_c_sources += [
+     "libavcodec/autorename_libavcodec_hpeldsp.c",
+     "libavcodec/autorename_libavcodec_videodsp.c",
+@@ -232,7 +232,7 @@ if ((current_cpu == "arm64" && ffmpeg_branding == "Chrome") || (current_cpu == "
+   ]
+ }
+ 
+-if ((is_mac && ffmpeg_branding == "Chrome") || (is_win && ffmpeg_branding == "Chrome") || (use_linux_config && ffmpeg_branding == "Chrome") || (use_linux_config && ffmpeg_branding == "ChromeOS")) {
++if ((is_mac && ffmpeg_branding == "Chrome") || (is_win && ffmpeg_branding == "Chrome") || (use_linux_config && ffmpeg_branding == "Chrome") || (use_linux_config && ffmpeg_branding == "ChromeOS") || (is_android)) {
+   ffmpeg_c_sources += [
+     "libavcodec/atsc_a53.c",
+     "libavcodec/cabac.c",
+@@ -328,7 +328,7 @@ if ((is_android && current_cpu == "x64") || (is_mac && current_cpu == "x64") ||
+   ]
+ }
+ 
+-if ((is_mac && current_cpu == "x64") || (is_win && current_cpu == "x64") || (is_win && current_cpu == "x86") || (use_linux_config && current_cpu == "x64") || (use_linux_config && current_cpu == "x86")) {
++if ((is_mac && current_cpu == "x64") || (is_win && current_cpu == "x64") || (is_win && current_cpu == "x86") || (use_linux_config && current_cpu == "x64") || (use_linux_config && current_cpu == "x86") || (is_android && current_cpu == "x86")) {
+   ffmpeg_c_sources += [
+     "libavcodec/x86/autorename_libavcodec_x86_videodsp_init.c",
+     "libavcodec/x86/h264_intrapred_init.c",
+@@ -424,7 +424,7 @@ if (use_linux_config && ffmpeg_branding == "ChromeOS") {
+   ]
+ }
+ 
+-if ((use_linux_config && current_cpu == "arm" && arm_use_neon) || (use_linux_config && current_cpu == "arm")) {
++if ((use_linux_config && current_cpu == "arm" && arm_use_neon) || (use_linux_config && current_cpu == "arm") || (is_android && current_cpu == "arm")) {
+   ffmpeg_c_sources += [
+     "libavcodec/arm/h264pred_init_arm.c",
+     "libavcodec/arm/hpeldsp_init_arm.c",
+@@ -444,7 +444,7 @@ if ((use_linux_config && current_cpu == "arm" && arm_use_neon) || (use_linux_con
+   ]
+ }
+ 
+-if ((use_linux_config && current_cpu == "mips64el") || (use_linux_config && current_cpu == "mipsel")) {
++if ((use_linux_config && current_cpu == "mips64el") || (use_linux_config && current_cpu == "mipsel") || (is_android && current_cpu == "mips64el") || (is_android && current_cpu == "mipsel")) {
+   ffmpeg_c_sources += [
+     "libavcodec/mips/autorename_libavcodec_mips_videodsp_init.c",
+     "libavcodec/mips/h264pred_init_mips.c",
+@@ -456,7 +456,7 @@ if ((use_linux_config && current_cpu == "mips64el") || (use_linux_config && curr
+   ]
+ }
+ 
+-if ((is_mac && current_cpu == "arm64") || (is_win && current_cpu == "arm64") || (use_linux_config && current_cpu == "arm64")) {
++if ((is_mac && current_cpu == "arm64") || (is_win && current_cpu == "arm64") || (use_linux_config && current_cpu == "arm64") || (is_android && current_cpu == "arm64")) {
+   ffmpeg_c_sources += [
+     "libavcodec/aarch64/h264pred_init.c",
+     "libavcodec/aarch64/hpeldsp_init_aarch64.c",
+@@ -482,7 +482,7 @@ if ((current_cpu == "arm64" && ffmpeg_branding == "Chrome") || (use_linux_config
+   ]
+ }
+ 
+-if ((is_mac && current_cpu == "arm64" && ffmpeg_branding == "Chrome") || (is_win && current_cpu == "arm64" && ffmpeg_branding == "Chrome") || (use_linux_config && current_cpu == "arm64" && ffmpeg_branding == "Chrome") || (use_linux_config && current_cpu == "arm64" && ffmpeg_branding == "ChromeOS")) {
++if ((is_mac && current_cpu == "arm64" && ffmpeg_branding == "Chrome") || (is_win && current_cpu == "arm64" && ffmpeg_branding == "Chrome") || (use_linux_config && current_cpu == "arm64" && ffmpeg_branding == "Chrome") || (use_linux_config && current_cpu == "arm64" && ffmpeg_branding == "ChromeOS") || (is_android && current_cpu == "arm64")) {
+   ffmpeg_c_sources += [
+     "libavcodec/aarch64/h264chroma_init_aarch64.c",
+     "libavcodec/aarch64/h264dsp_init_aarch64.c",
+@@ -518,7 +518,7 @@ if ((is_android && current_cpu == "arm" && arm_use_neon) || (use_linux_config &&
+   ]
+ }
+ 
+-if ((use_linux_config && current_cpu == "arm" && arm_use_neon && ffmpeg_branding == "Chrome") || (use_linux_config && current_cpu == "arm" && arm_use_neon && ffmpeg_branding == "ChromeOS") || (use_linux_config && current_cpu == "arm" && ffmpeg_branding == "Chrome") || (use_linux_config && current_cpu == "arm" && ffmpeg_branding == "ChromeOS")) {
++if ((use_linux_config && current_cpu == "arm" && arm_use_neon && ffmpeg_branding == "Chrome") || (use_linux_config && current_cpu == "arm" && arm_use_neon && ffmpeg_branding == "ChromeOS") || (use_linux_config && current_cpu == "arm" && ffmpeg_branding == "Chrome") || (use_linux_config && current_cpu == "arm" && ffmpeg_branding == "ChromeOS") || (is_android && current_cpu == "arm" && ffmpeg_branding == "Chrome")) {
+   ffmpeg_c_sources += [
+     "libavcodec/arm/h264chroma_init_arm.c",
+     "libavcodec/arm/h264dsp_init_arm.c",
+@@ -529,7 +529,7 @@ if ((use_linux_config && current_cpu == "arm" && arm_use_neon && ffmpeg_branding
+   ]
+ }
+ 
+-if ((is_mac && current_cpu == "x64" && ffmpeg_branding == "Chrome") || (is_win && current_cpu == "x64" && ffmpeg_branding == "Chrome") || (is_win && current_cpu == "x86" && ffmpeg_branding == "Chrome") || (use_linux_config && current_cpu == "x64" && ffmpeg_branding == "Chrome") || (use_linux_config && current_cpu == "x64" && ffmpeg_branding == "ChromeOS") || (use_linux_config && current_cpu == "x86" && ffmpeg_branding == "Chrome") || (use_linux_config && current_cpu == "x86" && ffmpeg_branding == "ChromeOS")) {
++if ((is_mac && current_cpu == "x64" && ffmpeg_branding == "Chrome") || (is_win && current_cpu == "x64" && ffmpeg_branding == "Chrome") || (is_win && current_cpu == "x86" && ffmpeg_branding == "Chrome") || (use_linux_config && current_cpu == "x64" && ffmpeg_branding == "Chrome") || (use_linux_config && current_cpu == "x64" && ffmpeg_branding == "ChromeOS") || (use_linux_config && current_cpu == "x86" && ffmpeg_branding == "Chrome") || (use_linux_config && current_cpu == "x86" && ffmpeg_branding == "ChromeOS") || (is_android && current_cpu == "x64") || (is_android && current_cpu == "x86")) {
+   ffmpeg_c_sources += [
+     "libavcodec/x86/h264_qpel.c",
+     "libavcodec/x86/h264chroma_init.c",
+@@ -550,7 +550,7 @@ if ((is_mac && current_cpu == "x64" && ffmpeg_branding == "Chrome") || (is_win &
+   ]
+ }
+ 
+-if ((use_linux_config && current_cpu == "mips64el" && ffmpeg_branding == "Chrome") || (use_linux_config && current_cpu == "mips64el" && ffmpeg_branding == "ChromeOS") || (use_linux_config && current_cpu == "mipsel" && ffmpeg_branding == "Chrome") || (use_linux_config && current_cpu == "mipsel" && ffmpeg_branding == "ChromeOS")) {
++if ((use_linux_config && current_cpu == "mips64el" && ffmpeg_branding == "Chrome") || (use_linux_config && current_cpu == "mips64el" && ffmpeg_branding == "ChromeOS") || (use_linux_config && current_cpu == "mipsel" && ffmpeg_branding == "Chrome") || (use_linux_config && current_cpu == "mipsel" && ffmpeg_branding == "ChromeOS") || (is_android && current_cpu == "mips64el") || (is_android && current_cpu == "mipsel")) {
+   ffmpeg_c_sources += [
+     "libavcodec/mips/aacdec_mips.c",
+     "libavcodec/mips/aacpsdsp_mips.c",
+@@ -562,7 +562,7 @@ if ((use_linux_config && current_cpu == "mips64el" && ffmpeg_branding == "Chrome
+   ]
+ }
+ 
+-if (use_linux_config && current_cpu == "arm" && arm_use_neon) {
++if ((use_linux_config && current_cpu == "arm" && arm_use_neon) || (is_android && current_cpu == "arm" && arm_use_neon)) {
+   ffmpeg_c_sources += [
+     "libavcodec/arm/hpeldsp_init_neon.c",
+     "libavcodec/arm/vp8dsp_init_neon.c",
+@@ -612,7 +612,7 @@ if ((use_linux_config && current_cpu == "arm" && arm_use_neon && ffmpeg_branding
+   ]
+ }
+ 
+-if ((use_linux_config && current_cpu == "arm" && arm_use_neon && ffmpeg_branding == "Chrome") || (use_linux_config && current_cpu == "arm" && arm_use_neon && ffmpeg_branding == "ChromeOS")) {
++if ((use_linux_config && current_cpu == "arm" && arm_use_neon && ffmpeg_branding == "Chrome") || (use_linux_config && current_cpu == "arm" && arm_use_neon && ffmpeg_branding == "ChromeOS") || (is_android && current_cpu == "arm" && arm_use_neon)) {
+   ffmpeg_gas_sources += [
+     "libavcodec/arm/h264cmc_neon.S",
+     "libavcodec/arm/h264dsp_neon.S",

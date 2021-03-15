@@ -231,7 +231,10 @@ public class HardwareVideoEncoderFactory implements VideoEncoderFactory {
     }
     String name = info.getName();
     // QCOM and Exynos H264 encoders are always supported.
-    return name.startsWith(QCOM_PREFIX) || name.startsWith(EXYNOS_PREFIX);
+    return name.startsWith(QCOM_PREFIX) || name.startsWith(EXYNOS_PREFIX)
+        // QCOM H264 encoder is supported in KITKAT or later.
+        || ((name.startsWith("OMX.MTK")) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
+        || ((name.startsWith("OMX.google") || name.startsWith("OMX.hisi")) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP);
   }
 
   private boolean isMediaCodecAllowed(MediaCodecInfo info) {
