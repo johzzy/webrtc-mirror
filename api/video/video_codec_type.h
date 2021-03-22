@@ -14,6 +14,10 @@
 namespace webrtc {
 
 // GENERATED_JAVA_ENUM_PACKAGE: org.webrtc
+
+// note: ACTION //api/video:video_frame_enums(//build/toolchain/android:android_clang_arm)
+// python ../../build/android/gyp/java_cpp_enum.py --srcjar=gen/api/video/video_frame_enums.srcjar ../../api/video/video_codec_type.h
+#ifdef DISABLE_H265
 enum VideoCodecType {
   // There are various memset(..., 0, ...) calls in the code that rely on
   // kVideoCodecGeneric being zero.
@@ -22,11 +26,21 @@ enum VideoCodecType {
   kVideoCodecVP9,
   kVideoCodecAV1,
   kVideoCodecH264,
-#ifndef DISABLE_H265
-  kVideoCodecH265,
-#endif
   kVideoCodecMultiplex,
 };
+#else
+enum VideoCodecType {
+  // There are various memset(..., 0, ...) calls in the code that rely on
+  // kVideoCodecGeneric being zero.
+  kVideoCodecGeneric = 0,
+  kVideoCodecVP8,
+  kVideoCodecVP9,
+  kVideoCodecAV1,
+  kVideoCodecH264,
+  kVideoCodecH265,
+  kVideoCodecMultiplex,
+};
+#endif
 
 }  // namespace webrtc
 
