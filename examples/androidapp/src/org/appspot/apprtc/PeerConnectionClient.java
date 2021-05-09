@@ -15,6 +15,7 @@ import android.os.Environment;
 import android.os.ParcelFileDescriptor;
 import android.support.annotation.Nullable;
 import android.util.Log;
+import com.piasy.avconf.AudioMixer;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -94,6 +95,7 @@ public class PeerConnectionClient {
   private static final String VIDEO_CODEC_H264 = "H264";
   private static final String VIDEO_CODEC_H264_BASELINE = "H264 Baseline";
   private static final String VIDEO_CODEC_H264_HIGH = "H264 High";
+  private static final String VIDEO_CODEC_H265 = "H265";
   private static final String AUDIO_CODEC_OPUS = "opus";
   private static final String AUDIO_CODEC_ISAC = "ISAC";
   private static final String VIDEO_CODEC_PARAM_START_BITRATE = "x-google-start-bitrate";
@@ -979,6 +981,8 @@ public class PeerConnectionClient {
       case VIDEO_CODEC_H264_HIGH:
       case VIDEO_CODEC_H264_BASELINE:
         return VIDEO_CODEC_H264;
+      case VIDEO_CODEC_H265:
+        return VIDEO_CODEC_H265;
       default:
         return VIDEO_CODEC_VP8;
     }
@@ -1167,8 +1171,55 @@ public class PeerConnectionClient {
     }
   }
 
+  private boolean recording = false;
+  private AudioMixer mixer;
+
   public void switchCamera() {
-    executor.execute(this ::switchCameraInternal);
+    if (false) {
+      executor.execute(this ::switchCameraInternal);
+    } else if (false) {
+      executor.execute(() -> {
+        if (peerConnection == null) {
+          return;
+        }
+
+        recording = !recording;
+        if (recording) {
+          peerConnection.startRecorder(RtpTransceiver.RtpTransceiverDirection.SEND_ONLY.ordinal(), "/sdcard/send.mkv");
+        } else {
+          peerConnection.stopRecorder(RtpTransceiver.RtpTransceiverDirection.SEND_ONLY.ordinal());
+        }
+      });
+    } else if (true) {
+      if (mixer != null) {
+        mixer.stopMixer();
+        mixer = null;
+      } else {
+        // adb push examples/objc/AppRTCMobile/ios/resources/mozart.mp3 /sdcard/
+        mixer = new AudioMixer("/sdcard/mozart.mp3", 48000, 1, 10_000, false, 20,
+            new AudioMixer.MixerCallback() {
+              @Override
+              public void onMixerSsrcFinished(final int ssrc) {
+                Logging.d(TAG, "onMixerSsrcFinished " + ssrc);
+                executor.execute(() -> {
+                  mixer.stopMixer();
+                  mixer = null;
+                });
+              }
+
+              @Override
+              public void onMixerSsrcError(final int ssrc, final int code) {
+                Logging.d(TAG, "onMixerSsrcError " + ssrc + " " + code);
+                executor.execute(() -> {
+                  mixer.stopMixer();
+                  mixer = null;
+                });
+              }
+            });
+        mixer.startMixer();
+        mixer.toggleMusicStreaming(true);
+      }
+    }
   }
 
   public void changeCaptureFormat(final int width, final int height, final int framerate) {

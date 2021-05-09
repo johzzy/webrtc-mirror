@@ -56,6 +56,7 @@ if (is_ios || is_mac) {
       # This is needed so that framework headers can include base headers
       # without pathname (so it works from within the framework module).
       "objc/base",
+      "objc/avconf",
     ]
     cflags = [
       "-Wimplicit-retain-self",
@@ -607,6 +608,10 @@ if (is_ios || is_mac) {
         "objc/components/video_codec/RTCCodecSpecificInfoH264.mm",
         "objc/components/video_codec/RTCH264ProfileLevelId.h",
         "objc/components/video_codec/RTCH264ProfileLevelId.mm",
+        "objc/components/video_codec/RTCCodecSpecificInfoH265.h",
+        "objc/components/video_codec/RTCCodecSpecificInfoH265.mm",
+        "objc/components/video_codec/RTCH265ProfileLevelId.h",
+        "objc/components/video_codec/RTCH265ProfileLevelId.mm",
       ]
       if (is_ios) {
         sources += [
@@ -1214,6 +1219,11 @@ if (is_ios || is_mac) {
           "objc/components/video_codec/RTCVideoDecoderH264.h",
           "objc/components/video_codec/RTCVideoEncoderFactoryH264.h",
           "objc/components/video_codec/RTCVideoEncoderH264.h",
+          "objc/components/video_codec/RTCH265ProfileLevelId.h",
+          "objc/components/video_codec/RTCVideoDecoderFactoryH265.h",
+          "objc/components/video_codec/RTCVideoDecoderH265.h",
+          "objc/components/video_codec/RTCVideoEncoderFactoryH265.h",
+          "objc/components/video_codec/RTCVideoEncoderH265.h",
           "objc/components/video_frame_buffer/RTCCVPixelBuffer.h",
           "objc/helpers/RTCCameraPreviewView.h",
           "objc/helpers/RTCDispatcher.h",
@@ -1260,12 +1270,21 @@ if (is_ios || is_mac) {
           "objc/api/video_codec/RTCVideoEncoderVP9.h",
           "objc/api/video_frame_buffer/RTCNativeI420Buffer.h",
           "objc/api/video_frame_buffer/RTCNativeMutableI420Buffer.h",
+          "objc/avconf/CFHijackCapturerDelegate.h",
+          "objc/avconf/CFRPCapturer.h",
+          "objc/avconf/CFVideoProcessor.h",
         ]
 
         if (!build_with_chromium) {
           common_objc_headers += [
             "objc/api/logging/RTCCallbackLogger.h",
             "objc/api/peerconnection/RTCFileLogger.h",
+          ]
+        }
+
+        if (rtc_use_bt_mixer) {
+          common_objc_headers += [
+            "objc/avconf/CFAudioMixer.h",
           ]
         }
 
@@ -1280,6 +1299,7 @@ if (is_ios || is_mac) {
 
         deps = [
           ":audio_objc",
+          ":avconf_objc",
           ":base_objc",
           ":default_codec_factory_objc",
           ":native_api",
@@ -1289,6 +1309,7 @@ if (is_ios || is_mac) {
           ":videocapture_objc",
           ":videocodec_objc",
           ":videotoolbox_objc",
+          "../api:create_peerconnection_factory",
           "../rtc_base:rtc_base_approved",
         ]
         if (rtc_use_metal_rendering) {
@@ -1307,6 +1328,12 @@ if (is_ios || is_mac) {
           "CoreMedia.framework",
           "GLKit.framework",
         ]
+
+        if (rtc_use_recorder || rtc_use_bt_mixer) {
+          deps += [
+            "//third_party/ffmpeg",
+          ]
+        }
 
         configs += [
           "..:common_objc",
@@ -1402,6 +1429,11 @@ if (is_ios || is_mac) {
           "objc/components/video_codec/RTCVideoDecoderH264.h",
           "objc/components/video_codec/RTCVideoEncoderFactoryH264.h",
           "objc/components/video_codec/RTCVideoEncoderH264.h",
+          "objc/components/video_codec/RTCH265ProfileLevelId.h",
+          "objc/components/video_codec/RTCVideoDecoderFactoryH265.h",
+          "objc/components/video_codec/RTCVideoDecoderH265.h",
+          "objc/components/video_codec/RTCVideoEncoderFactoryH265.h",
+          "objc/components/video_codec/RTCVideoEncoderH265.h",
           "objc/components/video_frame_buffer/RTCCVPixelBuffer.h",
           "objc/helpers/RTCDispatcher.h",
         ]
@@ -1607,6 +1639,14 @@ if (is_ios || is_mac) {
         "objc/components/video_codec/RTCVideoEncoderFactoryH264.m",
         "objc/components/video_codec/RTCVideoEncoderH264.h",
         "objc/components/video_codec/RTCVideoEncoderH264.mm",
+        "objc/components/video_codec/RTCVideoDecoderFactoryH265.h",
+        "objc/components/video_codec/RTCVideoDecoderFactoryH265.m",
+        "objc/components/video_codec/RTCVideoDecoderH265.h",
+        "objc/components/video_codec/RTCVideoDecoderH265.mm",
+        "objc/components/video_codec/RTCVideoEncoderFactoryH265.h",
+        "objc/components/video_codec/RTCVideoEncoderFactoryH265.m",
+        "objc/components/video_codec/RTCVideoEncoderH265.h",
+        "objc/components/video_codec/RTCVideoEncoderH265.mm",
       ]
 
       configs += [
@@ -1639,6 +1679,40 @@ if (is_ios || is_mac) {
         "CoreVideo.framework",
         "VideoToolbox.framework",
       ]
+    }
+
+    rtc_library("avconf_objc") {
+      sources = [
+        "objc/avconf/CFHijackCapturerDelegate.h",
+        "objc/avconf/CFHijackCapturerDelegate.mm",
+        "objc/avconf/CFRPCapturer.h",
+        "objc/avconf/CFRPCapturer.m",
+        "objc/avconf/CFVideoProcessor.h",
+      ]
+      if (rtc_use_bt_mixer) {
+        sources += [
+          "objc/avconf/CFAudioMixer.h",
+          "objc/avconf/CFAudioMixer.mm",
+        ]
+      }
+
+      deps = [
+        ":base_objc",
+      ]
+      if (rtc_use_bt_mixer) {
+        deps += [
+          "//modules/backing_track:backing_track",
+        ]
+      }
+
+      frameworks = [
+        "ReplayKit.framework",
+      ]
+
+      configs += [
+        "..:common_objc",
+      ]
+      public_configs = [ ":common_config_objc" ]
     }
   }
 }

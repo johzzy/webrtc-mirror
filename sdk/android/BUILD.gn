@@ -148,6 +148,12 @@ if (is_android) {
       "../../pc:libjingle_peerconnection",
       "../../rtc_base",
     ]
+
+    if (rtc_use_recorder) {
+      deps += [
+        "//third_party/ffmpeg",
+      ]
+    }
     output_extension = "so"
   }
 
@@ -394,6 +400,7 @@ if (is_android) {
   rtc_android_library("hwcodecs_java") {
     visibility = [ "*" ]
     sources = [
+      "api/org/webrtc/VideoCapabilityParser.java",
       "api/org/webrtc/HardwareVideoDecoderFactory.java",
       "api/org/webrtc/HardwareVideoEncoderFactory.java",
       "api/org/webrtc/PlatformSoftwareVideoDecoderFactory.java",
@@ -825,6 +832,11 @@ if (current_os == "linux" || is_android) {
       "src/jni/jni_generator_helper.cc",
       "src/jni/jni_generator_helper.h",
     ]
+    if (rtc_use_bt_mixer) {
+      sources += [
+        "src/jni/audio_mixer_jni.cc",
+      ]
+    }
 
     public = [
       "native_api/jni/class_loader.h",
@@ -843,6 +855,12 @@ if (current_os == "linux" || is_android) {
       "//rtc_base:rtc_base_approved",
     ]
     absl_deps = [ "//third_party/abseil-cpp/absl/types:optional" ]
+
+    if (rtc_use_bt_mixer) {
+      deps += [
+        "//modules/backing_track:backing_track",
+      ]
+    }
   }
 
   rtc_library("native_api_base") {
